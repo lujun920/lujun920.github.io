@@ -101,10 +101,12 @@
 <meta property="og:site_name" content="lujun920 Blog">
 <meta property="og:description" content="Channel&amp;emsp;&amp;emsp;Java NIO的通道类似IO的流，但又有些不同：  既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。 通道可以异步地读写。 通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。它实际上是双向交流的通道。  Channel的实现&amp;emsp;&amp;emsp;Channel是一个接口，只有两个方法close()和 isOp">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2017-08-28T08:00:22.213Z">
+<meta property="og:image" content="http://otqn63yyl.bkt.clouddn.com/github/images/170828/overview-channels-buffers.png">
+<meta property="og:updated_time" content="2017-08-28T08:45:30.542Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="[每天进步一点点]NIO-Channel(一)">
 <meta name="twitter:description" content="Channel&amp;emsp;&amp;emsp;Java NIO的通道类似IO的流，但又有些不同：  既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。 通道可以异步地读写。 通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。它实际上是双向交流的通道。  Channel的实现&amp;emsp;&amp;emsp;Channel是一个接口，只有两个方法close()和 isOp">
+<meta name="twitter:image" content="http://otqn63yyl.bkt.clouddn.com/github/images/170828/overview-channels-buffers.png">
 
 
 
@@ -287,7 +289,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-28T16:00:22+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-28T16:45:30+08:00">
                 2017-08-28
               </time>
             
@@ -348,7 +350,7 @@
 <ul>
 <li>既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。</li>
 <li>通道可以异步地读写。</li>
-<li>通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。<br>它实际上是双向交流的通道。</li>
+<li>通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。<br>它实际上是双向交流的通道。<br><img src="http://otqn63yyl.bkt.clouddn.com/github/images/170828/overview-channels-buffers.png" alt="enter description here"></li>
 </ul>
 <h2 id="Channel的实现"><a href="#Channel的实现" class="headerlink" title="Channel的实现"></a>Channel的实现</h2><p>&emsp;&emsp;Channel是一个接口，只有两个方法<code>close()</code>和 <code>isOpen()</code>，从JDK文档中，所有已知的实现如下，其中重要的标注下：</p>
 <ul>
@@ -370,6 +372,7 @@
 <p><code>SocketChannel</code>能通过TCP读写网络中的数据。</p>
 <p><code>ServerSocketChannel</code>可以监听新进来的TCP连接，像Web服务器那样。对每一个新进来的连接都会创建一个SocketChannel。</p>
 <h2 id="FileChannel示例"><a href="#FileChannel示例" class="headerlink" title="FileChannel示例"></a>FileChannel示例</h2><p>&emsp;&emsp;下面代码使用RandomAccessFile对文件进行读写操作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">public class ChannelFile &#123;</div><div class="line">    public static void main(String[] args)&#123;</div><div class="line">        try&#123;</div><div class="line">            //RandomAccessFile 随机存取文件的读和写</div><div class="line">            RandomAccessFile aFile = new RandomAccessFile(&quot;E:\\githubWorkspace\\javaLearn\\src\\main\\resources\\nio\\channel\\data\\nio-data.txt&quot;, &quot;rw&quot;);</div><div class="line">            FileChannel inChannel = aFile.getChannel();</div><div class="line">            ByteBuffer buf = ByteBuffer.allocate(48);</div><div class="line">            int bytesRead = inChannel.read(buf);</div><div class="line">            while (bytesRead != -1) &#123;</div><div class="line">                System.out.println(&quot;Read &quot; + bytesRead);</div><div class="line">                buf.flip();</div><div class="line">                while(buf.hasRemaining())&#123;</div><div class="line">                    System.out.print((char) buf.get());</div><div class="line">                &#125;</div><div class="line">                buf.clear();</div><div class="line">                bytesRead = inChannel.read(buf);</div><div class="line">            &#125;</div><div class="line">            String newData = &quot;\nNew String to write to file...&quot; + System.currentTimeMillis();</div><div class="line"></div><div class="line">            buf.clear();</div><div class="line">            buf.put(newData.getBytes());</div><div class="line"></div><div class="line">            buf.flip();</div><div class="line"></div><div class="line">            while(buf.hasRemaining()) &#123;</div><div class="line">                inChannel.write(buf);</div><div class="line">            &#125;</div><div class="line">            inChannel.close();</div><div class="line">            aFile.close();</div><div class="line">        &#125; catch (FileNotFoundException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125; catch (IOException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>原文整理：<a href="http://tutorials.jenkov.com/java-nio/index.html" target="_blank" rel="external">http://tutorials.jenkov.com/java-nio/index.html</a></p>
 
       
     </div>
