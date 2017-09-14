@@ -258,6 +258,167 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/14/Netty学习笔记-TCP粘包和拆包/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="lujun">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="lujun920 Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/09/14/Netty学习笔记-TCP粘包和拆包/" itemprop="url">[Netty学习笔记]TCP粘包和拆包</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-14T20:28:40+08:00">
+                2017-09-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nio/" itemprop="url" rel="index">
+                    <span itemprop="name">nio</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nio/netty/" itemprop="url" rel="index">
+                    <span itemprop="name">netty</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="TCP粘包和拆包"><a href="#TCP粘包和拆包" class="headerlink" title="TCP粘包和拆包"></a>TCP粘包和拆包</h2><p>&emsp;&emsp;TCP是一个“流”协议，就是一串没有界限的数据，TCP底层并不了解上层业务数据的具体含义，它会根据TCP缓冲区的实际情况进行包的划分，一个完整的包会被TCP拆成多个包进行发送，也有可能将多个小包合并成一个数据包发送，这就是粘包和拆包。</p>
+<h2 id="粘包和拆包发生的原因"><a href="#粘包和拆包发生的原因" class="headerlink" title="粘包和拆包发生的原因"></a>粘包和拆包发生的原因</h2><ol>
+<li>应用程序write写入的字节大小 <code>大于</code> 套接口发送缓冲区的大小</li>
+<li>进行MSS大小的TCP分段</li>
+<li>以太网帧的payload大于MTU进行的IP分片</li>
+</ol>
+<p><code>MTU</code>: Maxitum Transmission Unit 最大传输单元</p>
+<p><code>MSS</code>: Maxitum Segment Size 最大分段大小</p>
+<h2 id="粘包的问题解决策略"><a href="#粘包的问题解决策略" class="headerlink" title="粘包的问题解决策略"></a>粘包的问题解决策略</h2><p>&emsp;&emsp;由于底层的TCP无法理解上层业务的数据，所以底层是无法保证数据包不能被拆分和重组，所以只能通过上层应用的协议栈来设计解决，主流的协议栈解决方案有：</p>
+<ol>
+<li>消息定长，例如每个报文的固定长度200字符，不够空位补空格</li>
+<li>在包尾增加回车换行符进行分割，例如FTP协议</li>
+<li>将消息分为消息头和消息体，消息头包含表示消息总长度（或者消息体总长度）的字段，通常设计思路为消息头的第一个字段使用int32来表示消息总长度</li>
+<li>更复杂的应用层协议</li>
+</ol>
+<h2 id="Netty半包解码解决粘包问题"><a href="#Netty半包解码解决粘包问题" class="headerlink" title="Netty半包解码解决粘包问题"></a>Netty半包解码解决粘包问题</h2><p>&emsp;&emsp;LineBasedFrameDecoder和StringDecoder，只需要将支持半解码的Handler添加到ChannelPipeline中即可。<br>工作原理是依次遍历ByteBuf中的可读字节，判断是否有“ \n”或者“\r\n”，如果有，就以此位置为结束位置，从可读索引到结束位置为一行。支持携带结束符或者不携带结束符两种解码方式，同时支持配置单行的最大长度，如果到达最大长度后仍没有发现换行符，就抛出异常，同时忽略掉之前读到的异常码流</p>
+<p><a href="http://blog.chinaunix.net/uid-20788636-id-2626119.html?/11207.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-20788636-id-2626119.html?/11207.html</a>   TCP协议中MSS的理解</p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/30/每天进步一点点-NIO-Buffer-二/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -825,7 +986,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -836,7 +997,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -847,7 +1008,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>

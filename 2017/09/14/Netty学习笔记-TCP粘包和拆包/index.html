@@ -77,7 +77,7 @@
 <link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="java,nio," />
+  <meta name="keywords" content="java,nio,netty," />
 
 
 
@@ -93,20 +93,18 @@
 
 
 
-<meta name="description" content="Channel&amp;emsp;&amp;emsp;Java NIO的通道类似IO的流，但又有些不同：  既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。 通道可以异步地读写。 通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。它实际上是双向交流的通道。  Channel的实现&amp;emsp;&amp;emsp;Channel是一个接口，只有两个方法close()和 isOp">
-<meta name="keywords" content="java,nio">
+<meta name="description" content="TCP粘包和拆包&amp;emsp;&amp;emsp;TCP是一个“流”协议，就是一串没有界限的数据，TCP底层并不了解上层业务数据的具体含义，它会根据TCP缓冲区的实际情况进行包的划分，一个完整的包会被TCP拆成多个包进行发送，也有可能将多个小包合并成一个数据包发送，这就是粘包和拆包。 粘包和拆包发生的原因 应用程序write写入的字节大小 大于 套接口发送缓冲区的大小 进行MSS大小的TCP分段 以太网帧的">
+<meta name="keywords" content="java,nio,netty">
 <meta property="og:type" content="article">
-<meta property="og:title" content="[每天进步一点点]NIO-Channel(一)">
-<meta property="og:url" content="http://yoursite.com/2017/08/28/每天进步一点点-NIO-Channel-一/index.html">
+<meta property="og:title" content="[Netty学习笔记]TCP粘包和拆包">
+<meta property="og:url" content="http://yoursite.com/2017/09/14/Netty学习笔记-TCP粘包和拆包/index.html">
 <meta property="og:site_name" content="lujun920 Blog">
-<meta property="og:description" content="Channel&amp;emsp;&amp;emsp;Java NIO的通道类似IO的流，但又有些不同：  既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。 通道可以异步地读写。 通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。它实际上是双向交流的通道。  Channel的实现&amp;emsp;&amp;emsp;Channel是一个接口，只有两个方法close()和 isOp">
+<meta property="og:description" content="TCP粘包和拆包&amp;emsp;&amp;emsp;TCP是一个“流”协议，就是一串没有界限的数据，TCP底层并不了解上层业务数据的具体含义，它会根据TCP缓冲区的实际情况进行包的划分，一个完整的包会被TCP拆成多个包进行发送，也有可能将多个小包合并成一个数据包发送，这就是粘包和拆包。 粘包和拆包发生的原因 应用程序write写入的字节大小 大于 套接口发送缓冲区的大小 进行MSS大小的TCP分段 以太网帧的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://otqn63yyl.bkt.clouddn.com/github/images/170828/overview-channels-buffers.png">
-<meta property="og:updated_time" content="2017-08-28T08:45:30.542Z">
+<meta property="og:updated_time" content="2017-09-14T12:28:40.204Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="[每天进步一点点]NIO-Channel(一)">
-<meta name="twitter:description" content="Channel&amp;emsp;&amp;emsp;Java NIO的通道类似IO的流，但又有些不同：  既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。 通道可以异步地读写。 通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。它实际上是双向交流的通道。  Channel的实现&amp;emsp;&amp;emsp;Channel是一个接口，只有两个方法close()和 isOp">
-<meta name="twitter:image" content="http://otqn63yyl.bkt.clouddn.com/github/images/170828/overview-channels-buffers.png">
+<meta name="twitter:title" content="[Netty学习笔记]TCP粘包和拆包">
+<meta name="twitter:description" content="TCP粘包和拆包&amp;emsp;&amp;emsp;TCP是一个“流”协议，就是一串没有界限的数据，TCP底层并不了解上层业务数据的具体含义，它会根据TCP缓冲区的实际情况进行包的划分，一个完整的包会被TCP拆成多个包进行发送，也有可能将多个小包合并成一个数据包发送，这就是粘包和拆包。 粘包和拆包发生的原因 应用程序write写入的字节大小 大于 套接口发送缓冲区的大小 进行MSS大小的TCP分段 以太网帧的">
 
 
 
@@ -134,13 +132,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/08/28/每天进步一点点-NIO-Channel-一/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/09/14/Netty学习笔记-TCP粘包和拆包/"/>
 
 
 
 
 
-  <title>[每天进步一点点]NIO-Channel(一) | lujun920 Blog</title>
+  <title>[Netty学习笔记]TCP粘包和拆包 | lujun920 Blog</title>
   
 
 
@@ -260,7 +258,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/28/每天进步一点点-NIO-Channel-一/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/14/Netty学习笔记-TCP粘包和拆包/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="lujun">
@@ -277,7 +275,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">[每天进步一点点]NIO-Channel(一)</h1>
+          <h1 class="post-title" itemprop="name headline">[Netty学习笔记]TCP粘包和拆包</h1>
         
 
         <div class="post-meta">
@@ -289,8 +287,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-28T16:45:30+08:00">
-                2017-08-28
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-14T20:28:40+08:00">
+                2017-09-14
               </time>
             
 
@@ -314,6 +312,17 @@
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/nio/" itemprop="url" rel="index">
                     <span itemprop="name">nio</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nio/netty/" itemprop="url" rel="index">
+                    <span itemprop="name">netty</span>
                   </a>
                 </span>
 
@@ -346,33 +355,23 @@
       
 
       
-        <h2 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h2><p>&emsp;&emsp;Java NIO的通道类似IO的流，但又有些不同：</p>
-<ul>
-<li>既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。</li>
-<li>通道可以异步地读写。</li>
-<li>通道中的数据总是要先读到一个Buffer，或者总是要从一个Buffer中写入。<br>它实际上是双向交流的通道。<br><img src="http://otqn63yyl.bkt.clouddn.com/github/images/170828/overview-channels-buffers.png" alt="enter description here"></li>
-</ul>
-<h2 id="Channel的实现"><a href="#Channel的实现" class="headerlink" title="Channel的实现"></a>Channel的实现</h2><p>&emsp;&emsp;Channel是一个接口，只有两个方法<code>close()</code>和 <code>isOpen()</code>，从JDK文档中，所有已知的实现如下，其中重要的标注下：</p>
-<ul>
-<li>AbstractInterruptibleChannel</li>
-<li>AbstractSelectableChannel</li>
-<li>AsynchronousFileChannel</li>
-<li>AsynchronousServerSocketChannel</li>
-<li>AsynchronousSocketChannel</li>
-<li><code>DatagramChannel</code></li>
-<li><code>FileChanne</code></li>
-<li>Pipe.SinkChannel</li>
-<li>Pipe.SourceChannel</li>
-<li>SelectableChannel</li>
-<li><code>ServerSocketChannel</code></li>
-<li><code>SocketChannel</code></li>
-</ul>
-<p><code>FileChannel</code>从文件中读写数据。</p>
-<p><code>DatagramChannel</code>能通过UDP读写网络中的数据。</p>
-<p><code>SocketChannel</code>能通过TCP读写网络中的数据。</p>
-<p><code>ServerSocketChannel</code>可以监听新进来的TCP连接，像Web服务器那样。对每一个新进来的连接都会创建一个SocketChannel。</p>
-<h2 id="FileChannel示例"><a href="#FileChannel示例" class="headerlink" title="FileChannel示例"></a>FileChannel示例</h2><p>&emsp;&emsp;下面代码使用RandomAccessFile对文件进行读写操作：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">public class ChannelFile &#123;</div><div class="line">    public static void main(String[] args)&#123;</div><div class="line">        try&#123;</div><div class="line">            //RandomAccessFile 随机存取文件的读和写</div><div class="line">            RandomAccessFile aFile = new RandomAccessFile(&quot;E:\\githubWorkspace\\javaLearn\\src\\main\\resources\\nio\\channel\\data\\nio-data.txt&quot;, &quot;rw&quot;);</div><div class="line">            FileChannel inChannel = aFile.getChannel();</div><div class="line">            ByteBuffer buf = ByteBuffer.allocate(48);</div><div class="line">            int bytesRead = inChannel.read(buf);</div><div class="line">            while (bytesRead != -1) &#123;</div><div class="line">                System.out.println(&quot;Read &quot; + bytesRead);</div><div class="line">                buf.flip();</div><div class="line">                while(buf.hasRemaining())&#123;</div><div class="line">                    System.out.print((char) buf.get());</div><div class="line">                &#125;</div><div class="line">                buf.clear();</div><div class="line">                bytesRead = inChannel.read(buf);</div><div class="line">            &#125;</div><div class="line">            String newData = &quot;\nNew String to write to file...&quot; + System.currentTimeMillis();</div><div class="line"></div><div class="line">            buf.clear();</div><div class="line">            buf.put(newData.getBytes());</div><div class="line"></div><div class="line">            buf.flip();</div><div class="line"></div><div class="line">            while(buf.hasRemaining()) &#123;</div><div class="line">                inChannel.write(buf);</div><div class="line">            &#125;</div><div class="line">            inChannel.close();</div><div class="line">            aFile.close();</div><div class="line">        &#125; catch (FileNotFoundException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125; catch (IOException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>原文整理：<a href="http://tutorials.jenkov.com/java-nio/index.html" target="_blank" rel="external">http://tutorials.jenkov.com/java-nio/index.html</a></p>
+        <h2 id="TCP粘包和拆包"><a href="#TCP粘包和拆包" class="headerlink" title="TCP粘包和拆包"></a>TCP粘包和拆包</h2><p>&emsp;&emsp;TCP是一个“流”协议，就是一串没有界限的数据，TCP底层并不了解上层业务数据的具体含义，它会根据TCP缓冲区的实际情况进行包的划分，一个完整的包会被TCP拆成多个包进行发送，也有可能将多个小包合并成一个数据包发送，这就是粘包和拆包。</p>
+<h2 id="粘包和拆包发生的原因"><a href="#粘包和拆包发生的原因" class="headerlink" title="粘包和拆包发生的原因"></a>粘包和拆包发生的原因</h2><ol>
+<li>应用程序write写入的字节大小 <code>大于</code> 套接口发送缓冲区的大小</li>
+<li>进行MSS大小的TCP分段</li>
+<li>以太网帧的payload大于MTU进行的IP分片</li>
+</ol>
+<p><code>MTU</code>: Maxitum Transmission Unit 最大传输单元</p>
+<p><code>MSS</code>: Maxitum Segment Size 最大分段大小</p>
+<h2 id="粘包的问题解决策略"><a href="#粘包的问题解决策略" class="headerlink" title="粘包的问题解决策略"></a>粘包的问题解决策略</h2><p>&emsp;&emsp;由于底层的TCP无法理解上层业务的数据，所以底层是无法保证数据包不能被拆分和重组，所以只能通过上层应用的协议栈来设计解决，主流的协议栈解决方案有：</p>
+<ol>
+<li>消息定长，例如每个报文的固定长度200字符，不够空位补空格</li>
+<li>在包尾增加回车换行符进行分割，例如FTP协议</li>
+<li>将消息分为消息头和消息体，消息头包含表示消息总长度（或者消息体总长度）的字段，通常设计思路为消息头的第一个字段使用int32来表示消息总长度</li>
+<li>更复杂的应用层协议</li>
+</ol>
+<h2 id="Netty半包解码解决粘包问题"><a href="#Netty半包解码解决粘包问题" class="headerlink" title="Netty半包解码解决粘包问题"></a>Netty半包解码解决粘包问题</h2><p>&emsp;&emsp;LineBasedFrameDecoder和StringDecoder，只需要将支持半解码的Handler添加到ChannelPipeline中即可。<br>工作原理是依次遍历ByteBuf中的可读字节，判断是否有“ \n”或者“\r\n”，如果有，就以此位置为结束位置，从可读索引到结束位置为一行。支持携带结束符或者不携带结束符两种解码方式，同时支持配置单行的最大长度，如果到达最大长度后仍没有发现换行符，就抛出异常，同时忽略掉之前读到的异常码流</p>
+<p><a href="http://blog.chinaunix.net/uid-20788636-id-2626119.html?/11207.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-20788636-id-2626119.html?/11207.html</a>   TCP协议中MSS的理解</p>
 
       
     </div>
@@ -406,6 +405,8 @@
           
             <a href="/tags/nio/" rel="tag"># nio</a>
           
+            <a href="/tags/netty/" rel="tag"># netty</a>
+          
         </div>
       
 
@@ -417,8 +418,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/08/28/转-一致性哈希算法-consistent-hashing/" rel="next" title="[转]一致性哈希算法(consistent hashing)">
-                <i class="fa fa-chevron-left"></i> [转]一致性哈希算法(consistent hashing)
+              <a href="/2017/08/30/每天进步一点点-NIO-Buffer-二/" rel="next" title="[每天进步一点点]NIO-Buffer(二)">
+                <i class="fa fa-chevron-left"></i> [每天进步一点点]NIO-Buffer(二)
               </a>
             
           </div>
@@ -426,10 +427,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/08/30/每天进步一点点-NIO-Buffer-二/" rel="prev" title="[每天进步一点点]NIO-Buffer(二)">
-                [每天进步一点点]NIO-Buffer(二) <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -592,7 +589,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Channel"><span class="nav-number">1.</span> <span class="nav-text">Channel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Channel的实现"><span class="nav-number">2.</span> <span class="nav-text">Channel的实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FileChannel示例"><span class="nav-number">3.</span> <span class="nav-text">FileChannel示例</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP粘包和拆包"><span class="nav-number">1.</span> <span class="nav-text">TCP粘包和拆包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#粘包和拆包发生的原因"><span class="nav-number">2.</span> <span class="nav-text">粘包和拆包发生的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#粘包的问题解决策略"><span class="nav-number">3.</span> <span class="nav-text">粘包的问题解决策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Netty半包解码解决粘包问题"><span class="nav-number">4.</span> <span class="nav-text">Netty半包解码解决粘包问题</span></a></li></ol></div>
             
 
           </div>
